@@ -1,8 +1,11 @@
 package com.db.crud_pessoa.infrastructure.entitys;
 
-import java.time.LocalDate;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.util.List;
+
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -16,16 +19,20 @@ public class Pessoa {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private Long id;
 
     @NotNull
     @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "dataNascimento")
+    @Column(name = "data_nascimento")
     private LocalDate dataNascimento;
 
     @NotNull
     @Column(name = "cpf", unique = true, nullable = false)
-    private Long cpf;
+    @Size(min = 11, max = 11, message = "Um cpf válido tem 11 dígitos.")
+    private String cpf;
+
+    @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Endereco> enderecos;
 }

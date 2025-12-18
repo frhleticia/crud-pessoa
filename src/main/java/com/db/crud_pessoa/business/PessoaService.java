@@ -1,45 +1,112 @@
 package com.db.crud_pessoa.business;
 
+import com.db.crud_pessoa.dto.EnderecoDTO;
+import com.db.crud_pessoa.dto.PessoaRequest;
+import com.db.crud_pessoa.dto.PessoaResponse;
+import com.db.crud_pessoa.infrastructure.entitys.Endereco;
 import com.db.crud_pessoa.infrastructure.entitys.Pessoa;
 import com.db.crud_pessoa.infrastructure.repository.PessoaRepository;
+import com.db.crud_pessoa.mapper.PessoaMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.Period;
+
+import java.util.List;
 
 @Service
 public class PessoaService {
 
-    private final PessoaRepository repository;
+    private final PessoaRepository pessoaRepository;
+    private final PessoaMapper pessoaMapper;
 
-    public PessoaService(PessoaRepository repository){
-        this.repository = repository;
+    public PessoaService(PessoaRepository pessoaRepository, PessoaMapper pessoaMapper) {
+        this.pessoaRepository = pessoaRepository;
+        this.pessoaMapper = pessoaMapper;
     }
 
-    public void salvarPessoa(Pessoa pessoa){
-        repository.saveAndFlush(pessoa);
+    public PessoaResponse salvar(PessoaRequest request) {
+        Pessoa p = pessoaMapper.toEntity(request);
+        return pessoaMapper.toResponse(pessoaRepository.save(p));
     }
 
-    public Pessoa buscarPessoaPorCpf(Long cpf){
-        return repository.findByCpf(cpf).orElseThrow(
-                () -> new RuntimeException("CPF não encontrado.")
-        );
+    public List<PessoaResponse> listarPessoas() {//toResponse garante q mostre os endereços junto
+        return pessoaRepository.findAll()
+                .stream()
+                .map(pessoaMapper::toResponse)
+                .toList();
     }
 
-    public void deletarPessoaPorCpf(Long cpf){
-        repository.deleteByCpf(cpf);
+    public List<EnderecoDTO> listarEnderecos(Long id) {
+        Pessoa p = pessoaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+        return p.getEnderecos()
+                .stream().
+                map(e -> new EnderecoDTO(e.getId(), e.getRua(), e.getNumero(), e.getBairro(), e.getCidade(), e.getEstado(), e.getCep()))
+                .toList();
     }
 
-    public void atualizarPessoaPorId(Integer id, Pessoa pessoa){
-        Pessoa pessoaEntity = repository.findById(id).orElseThrow(() ->
-                new RuntimeException("Usuário não encontrado."));
-        Pessoa usuarioAtualizado = Pessoa.builder()
-                .nome(pessoa.getNome() != null ?
-                        pessoa.getNome() : pessoaEntity.getNome())
-                .dataNascimento(pessoa.getDataNascimento() != null ?
-                        pessoa.getDataNascimento() : pessoaEntity.getDataNascimento())
-                .cpf(pessoa.getCpf() != null ?
-                        pessoa.getCpf() : pessoaEntity.getCpf())
-                .id(pessoaEntity.getId())
-                .build();
+    public void remover(Long id) {
 
-        repository.saveAndFlush(usuarioAtualizado);
+        if (!pessoaRepository.existsById(id)) {
+            throw new EntityNotFoundException("Id da pessoa não encontrado");
+        }
+        pessoaRepository.deleteById(id);
+    }
+
+    public PessoaResponse atualizarTudo(Long id, PessoaRequest request) {
+
+        Pessoa p = pessoaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+        {
+            p.setNome(request.nome());
+            p.setCpf(request.cpf());
+            p.setDataNascimento(request.dataNascimento());
+            p.getEnderecos().clear();
+            for (EnderecoDTO endereco : request.enderecos()) {
+                Endereco e = new Endereco();
+                e.setRua(endereco.rua());
+                e.setNumero(endereco.numero());
+                e.setBairro(endereco.bairro());
+                e.setCidade(endereco.cidade());
+                e.setEstado(endereco.estado());
+                e.setCep(endereco.cep());
+                e.setPessoa(p);
+                p.getEnderecos().add(e);
+            }
+            return pessoaMapper.toResponse(pessoaRepository.save(p));
+        }
+    }
+
+    public PessoaResponse adicionarEnderecoPorId(Long id, EnderecoDTO dto){
+
+        Pessoa p = pessoaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        Endereco endereco = pessoaMapper.toEnderecoEntity(dto, p);
+        p.getEnderecos().add(endereco);
+
+        return pessoaMapper.toResponse(pessoaRepository.save(p));
+    }
+
+    public PessoaResponse atualizarEnderecoPorId(Long pesId, Long endId, EnderecoDTO dto){
+
+        Pessoa p = pessoaRepository.findById(pesId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        p.getEnderecos().stream()
+        .filter(e -> e.getId().equals(endId))
+        .findFirst()
+        .orElseThrow(() -> new EntityNotFoundException("Endereço não encontrado"));
+
+        Endereco e = pessoaMapper.toEnderecoEntity(dto, p);
+        p.getEnderecos().add(e);
+
+        return pessoaMapper.toResponse(pessoaRepository.save(p));
+    }
+
+    public Integer calcularIdade(Long id) {
+
+        Pessoa p = pessoaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        LocalDate dataHoje = LocalDate.now();
+        return Period.between(p.getDataNascimento(), dataHoje).getYears();
     }
 }

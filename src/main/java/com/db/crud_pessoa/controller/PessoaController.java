@@ -1,39 +1,63 @@
 package com.db.crud_pessoa.controller;
 
 import com.db.crud_pessoa.business.PessoaService;
-import com.db.crud_pessoa.infrastructure.entitys.Pessoa;
+import com.db.crud_pessoa.dto.EnderecoDTO;
+import com.db.crud_pessoa.dto.PessoaRequest;
+import com.db.crud_pessoa.dto.PessoaResponse;
+import com.db.crud_pessoa.infrastructure.entitys.Endereco;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/pessoa")
+@RequestMapping("/pessoas")
 @RequiredArgsConstructor
 public class PessoaController {
 
     private final PessoaService pessoaService;
 
-    @PostMapping //guardar dados
-    public ResponseEntity<Void> salvarPessoa(@RequestBody Pessoa pessoa){
-        pessoaService.salvarPessoa(pessoa);
-        return ResponseEntity.ok().build(); //qualquer resposta ta ok
+    @PostMapping
+    public ResponseEntity<PessoaResponse> criar(@RequestBody PessoaRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(pessoaService.salvar(request));
     }
 
     @GetMapping
-    public ResponseEntity<Pessoa> buscarPessoaPorCpf(@RequestBody Long cpf){
-        return ResponseEntity.ok(pessoaService.buscarPessoaPorCpf(cpf));
+    public List<PessoaResponse> listarTodos(){
+        return pessoaService.listarPessoas();
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> deletarPessoaPorCpf(@RequestBody Long cpf){
-        pessoaService.deletarPessoaPorCpf(cpf);
-        return ResponseEntity.ok().build();
+    @GetMapping("/{id}/enderecos")
+    public List<EnderecoDTO> listarEnderecos(@PathVariable Long id){
+        return pessoaService.listarEnderecos(id);
     }
 
-    @PutMapping //atualiza tudo
-    public ResponseEntity<Void> atualizarUsuarioPorId(@RequestBody Integer id,
-                                                      @RequestBody Pessoa pessoa){
-        pessoaService.atualizarPessoaPorId(id, pessoa);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{id}")
+    public ResponseEntity<PessoaResponse> atualizar(@PathVariable Long id, @RequestBody PessoaRequest request){
+        return ResponseEntity.ok(pessoaService.atualizarTudo(id, request));
+    }
+
+    @GetMapping("/{id}/idade")
+    public Integer mostrarIdade(@PathVariable Long id){
+        return pessoaService.calcularIdade(id);
+    }
+
+    @PostMapping("/{id}/enderecos")
+    public PessoaResponse addEnderecoPorId(@PathVariable Long id, @RequestBody EnderecoDTO endereco){
+        return pessoaService.adicionarEnderecoPorId(id, endereco);
+    }
+
+    @PutMapping("/{pessoaId}/enderecos/{enderecoId}")
+    public PessoaResponse atualizarEnderecoPorId(@PathVariable Long pessoaId, @PathVariable Long enderecoId, @RequestBody EnderecoDTO endereco){
+
+        return pessoaService.atualizarEnderecoPorId(pessoaId,enderecoId, endereco);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> remover(@PathVariable Long id){
+        pessoaService.remover(id);
+        return ResponseEntity.noContent().build();
     }
 }
