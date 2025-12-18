@@ -48,7 +48,7 @@ public class PessoaMapper {
     }
 
     public PessoaResponse toResponse(Pessoa p){
-        List<EnderecoDTO> enderecos = p.getEnderecos().stream().map(e -> new EnderecoDTO(e.getId(), e.isPrincipal(), e.getRua(), e.getNumero(), e.getBairro(), e.getCidade(), e.getEstado(), e.getCep())).toList();
+        List<EnderecoDTO> enderecos = p.getEnderecos().stream().map(e -> new EnderecoDTO(e.getId(), e.getPrincipal(), e.getRua(), e.getNumero(), e.getBairro(), e.getCidade(), e.getEstado(), e.getCep())).toList();
         return new PessoaResponse(p.getId(), p.getNome(), p.getDataNascimento(), p.getCpf(), enderecos);
     }
 }
