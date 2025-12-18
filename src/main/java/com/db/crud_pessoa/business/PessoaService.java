@@ -42,7 +42,7 @@ public class PessoaService {
         Pessoa p = pessoaRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
         return p.getEnderecos()
                 .stream().
-                map(e -> new EnderecoDTO(e.getId(), e.getRua(), e.getNumero(), e.getBairro(), e.getCidade(), e.getEstado(), e.getCep()))
+                map(e -> new EnderecoDTO(e.getId(), e.getPrincipal(), e.getRua(), e.getNumero(), e.getBairro(), e.getCidade(), e.getEstado(), e.getCep()))
                 .toList();
     }
 
@@ -64,6 +64,7 @@ public class PessoaService {
             p.getEnderecos().clear();
             for (EnderecoDTO endereco : request.enderecos()) {
                 Endereco e = new Endereco();
+                e.setPrincipal(endereco.principal());
                 e.setRua(endereco.rua());
                 e.setNumero(endereco.numero());
                 e.setBairro(endereco.bairro());
@@ -87,20 +88,41 @@ public class PessoaService {
         return pessoaMapper.toResponse(pessoaRepository.save(p));
     }
 
-    public PessoaResponse atualizarEnderecoPorId(Long pesId, Long endId, EnderecoDTO dto){
+    public PessoaResponse mostrarEnderecoPrincipal(Long pessoaId, Boolean isPrincipal, EnderecoDTO dto){
 
-        Pessoa p = pessoaRepository.findById(pesId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+        Pessoa p = pessoaRepository.findById(pessoaId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        List<Endereco> principais = p.getEnderecos().stream()
+                .filter(e -> Boolean.TRUE.equals(e.getPrincipal())).toList();
+
+        if (principais.isEmpty()){
+            throw new EntityNotFoundException("Nenhum endereço principal encontrado");
+        }
+
+        Endereco e = pessoaMapper.toEnderecoEntity(dto, p);
+        p.getEnderecos().add(e);
+
+        return pessoaMapper.toResponse(pessoaRepository.save(p));
+
+
+    }
+
+    public PessoaResponse atualizarEnderecoPorId(Long pessoaId, Long enderecoId, EnderecoDTO dto){
+
+        Pessoa p = pessoaRepository.findById(pessoaId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
         p.getEnderecos().stream()
-        .filter(e -> e.getId().equals(endId))
-        .findFirst()
-        .orElseThrow(() -> new EntityNotFoundException("Endereço não encontrado"));
+                .filter(e -> e.getId().equals(enderecoId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Endereço não encontrado"));
 
         Endereco e = pessoaMapper.toEnderecoEntity(dto, p);
         p.getEnderecos().add(e);
 
         return pessoaMapper.toResponse(pessoaRepository.save(p));
     }
+
+
 
     public Integer calcularIdade(Long id) {
 

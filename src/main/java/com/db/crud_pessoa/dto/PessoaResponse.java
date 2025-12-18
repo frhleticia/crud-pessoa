@@ -1,5 +1,7 @@
 package com.db.crud_pessoa.dto;
 
+import jakarta.validation.Valid;
+
 import java.time.LocalDate;
 import java.util.List;
 

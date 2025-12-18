@@ -5,6 +5,7 @@ import com.db.crud_pessoa.dto.EnderecoDTO;
 import com.db.crud_pessoa.dto.PessoaRequest;
 import com.db.crud_pessoa.dto.PessoaResponse;
 import com.db.crud_pessoa.infrastructure.entitys.Endereco;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +20,6 @@ public class PessoaController {
 
     private final PessoaService pessoaService;
 
-    @PostMapping
-    public ResponseEntity<PessoaResponse> criar(@RequestBody PessoaRequest request){
-        return ResponseEntity.status(HttpStatus.CREATED).body(pessoaService.salvar(request));
-    }
-
     @GetMapping
     public List<PessoaResponse> listarTodos(){
         return pessoaService.listarPessoas();
@@ -34,25 +30,36 @@ public class PessoaController {
         return pessoaService.listarEnderecos(id);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PessoaResponse> atualizar(@PathVariable Long id, @RequestBody PessoaRequest request){
-        return ResponseEntity.ok(pessoaService.atualizarTudo(id, request));
-    }
-
     @GetMapping("/{id}/idade")
     public Integer mostrarIdade(@PathVariable Long id){
         return pessoaService.calcularIdade(id);
     }
 
+    @PostMapping
+    public ResponseEntity<PessoaResponse> criar(@Valid @RequestBody PessoaRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(pessoaService.salvar(request));
+    }
+
     @PostMapping("/{id}/enderecos")
-    public PessoaResponse addEnderecoPorId(@PathVariable Long id, @RequestBody EnderecoDTO endereco){
+    public PessoaResponse addEnderecoPorId(@PathVariable Long id, @Valid @RequestBody EnderecoDTO endereco){
         return pessoaService.adicionarEnderecoPorId(id, endereco);
     }
 
-    @PutMapping("/{pessoaId}/enderecos/{enderecoId}")
-    public PessoaResponse atualizarEnderecoPorId(@PathVariable Long pessoaId, @PathVariable Long enderecoId, @RequestBody EnderecoDTO endereco){
+    @PutMapping("/{id}")
+    public ResponseEntity<PessoaResponse> atualizar(@PathVariable Long id, @Valid @RequestBody PessoaRequest request){
+        return ResponseEntity.ok(pessoaService.atualizarTudo(id, request));
+    }
 
-        return pessoaService.atualizarEnderecoPorId(pessoaId,enderecoId, endereco);
+    @PutMapping("/{pessoaId}/enderecos/{enderecoId}")
+    public PessoaResponse atualizarEnderecoPorId(@PathVariable Long pessoaId, @PathVariable Long enderecoId, @Valid @RequestBody EnderecoDTO endereco){
+
+        return pessoaService.atualizarEnderecoPorId(pessoaId, enderecoId, endereco);
+    }
+
+    @GetMapping("/{pessoaId}/enderecos/principais")
+    public PessoaResponse mostrarEnderecoPrincipal(@PathVariable Long pessoaId, Boolean isPrincipal, @Valid @RequestBody EnderecoDTO endereco){
+
+        return pessoaService.mostrarEnderecoPrincipal(pessoaId, isPrincipal, endereco);
     }
 
     @DeleteMapping("/{id}")

@@ -20,6 +20,7 @@ public class PessoaMapper {
         p.setDataNascimento(req.dataNascimento());
         List<Endereco> enderecos = req.enderecos().stream().map(e -> {
             Endereco endereco = new Endereco();
+            endereco.setPrincipal(e.principal());
             endereco.setRua(e.rua());
             endereco.setBairro(e.bairro());
             endereco.setCep(e.cep());
@@ -35,6 +36,7 @@ public class PessoaMapper {
 
     public Endereco toEnderecoEntity(EnderecoDTO dto, Pessoa pessoa){
         Endereco e = new Endereco();
+        e.setPrincipal(dto.principal());
         e.setRua(dto.rua());
         e.setNumero(dto.numero());
         e.setBairro(dto.bairro());
@@ -46,7 +48,7 @@ public class PessoaMapper {
     }
 
     public PessoaResponse toResponse(Pessoa p){
-        List<EnderecoDTO> enderecos = p.getEnderecos().stream().map(e -> new EnderecoDTO(e.getId(), e.getRua(), e.getNumero(), e.getBairro(), e.getCidade(), e.getEstado(), e.getCep())).toList();
+        List<EnderecoDTO> enderecos = p.getEnderecos().stream().map(e -> new EnderecoDTO(e.getId(), e.isPrincipal(), e.getRua(), e.getNumero(), e.getBairro(), e.getCidade(), e.getEstado(), e.getCep())).toList();
         return new PessoaResponse(p.getId(), p.getNome(), p.getDataNascimento(), p.getCpf(), enderecos);
     }
 }
