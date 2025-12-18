@@ -57,9 +57,9 @@ public class PessoaController {
     }
 
     @GetMapping("/{pessoaId}/enderecos/principais")
-    public PessoaResponse mostrarEnderecoPrincipal(@PathVariable Long pessoaId, Boolean isPrincipal, @Valid @RequestBody EnderecoDTO endereco){
+    public PessoaResponse mostrarEnderecoPrincipal(@PathVariable Long pessoaId, Boolean principal, @Valid @RequestBody EnderecoDTO endereco){
 
-        return pessoaService.mostrarEnderecoPrincipal(pessoaId, isPrincipal, endereco);
+        return pessoaService.mostrarEnderecoPrincipal(pessoaId, principal, endereco);
     }
 
     @DeleteMapping("/{id}")
