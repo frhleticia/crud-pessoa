@@ -30,6 +30,11 @@ public class PessoaController {
         return pessoaService.listarEnderecos(id);
     }
 
+    @GetMapping("/{pessoaId}/enderecos/principais")
+    public List<EnderecoDTO> listarEnderecosPrincipais(@PathVariable Long pessoaId) {
+        return pessoaService.listarEnderecosPrincipais(pessoaId);
+    }
+
     @GetMapping("/{id}/idade")
     public Integer mostrarIdade(@PathVariable Long id){
         return pessoaService.calcularIdade(id);
@@ -54,12 +59,6 @@ public class PessoaController {
     public PessoaResponse atualizarEnderecoPorId(@PathVariable Long pessoaId, @PathVariable Long enderecoId, @Valid @RequestBody EnderecoDTO endereco){
 
         return pessoaService.atualizarEnderecoPorId(pessoaId, enderecoId, endereco);
-    }
-
-    @GetMapping("/{pessoaId}/enderecos/principais")
-    public PessoaResponse mostrarEnderecoPrincipal(@PathVariable Long pessoaId, Boolean principal, @Valid @RequestBody EnderecoDTO endereco){
-
-        return pessoaService.mostrarEnderecoPrincipal(pessoaId, principal, endereco);
     }
 
     @DeleteMapping("/{id}")

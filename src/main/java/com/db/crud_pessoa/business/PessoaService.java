@@ -8,7 +8,6 @@ import com.db.crud_pessoa.infrastructure.entitys.Pessoa;
 import com.db.crud_pessoa.infrastructure.repository.PessoaRepository;
 import com.db.crud_pessoa.mapper.PessoaMapper;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -99,24 +98,32 @@ public class PessoaService {
         return pessoaMapper.toResponse(pessoaRepository.save(p));
     }
 
-    public PessoaResponse mostrarEnderecoPrincipal(Long pessoaId, Boolean isPrincipal, EnderecoDTO dto){
+    public List<EnderecoDTO> listarEnderecosPrincipais(Long pessoaId) {
 
-        Pessoa p = pessoaRepository.findById(pessoaId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+        Pessoa p = pessoaRepository.findById(pessoaId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-        List<Endereco> principais = p.getEnderecos().stream()
-                .filter(e -> Boolean.TRUE.equals(e.getPrincipal())).toList();
+        List<EnderecoDTO> principais = p.getEnderecos().stream()
+                .filter(e -> Boolean.TRUE.equals(e.getPrincipal()))
+                .map(e -> new EnderecoDTO(
+                        e.getId(),
+                        e.getPrincipal(),
+                        e.getRua(),
+                        e.getNumero(),
+                        e.getBairro(),
+                        e.getCidade(),
+                        e.getEstado(),
+                        e.getCep()
+                ))
+                .toList();
 
-        if (principais.isEmpty()){
+        if (principais.isEmpty()) {
             throw new EntityNotFoundException("Nenhum endereço principal encontrado");
         }
 
-        Endereco e = pessoaMapper.toEnderecoEntity(dto, p);
-        p.getEnderecos().add(e);
-
-        return pessoaMapper.toResponse(pessoaRepository.save(p));
-
-
+        return principais;
     }
+
 
     public PessoaResponse atualizarEnderecoPorId(Long pessoaId, Long enderecoId, EnderecoDTO dto){
 
