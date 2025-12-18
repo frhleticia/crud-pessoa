@@ -8,7 +8,10 @@ import com.db.crud_pessoa.infrastructure.entitys.Pessoa;
 import com.db.crud_pessoa.infrastructure.repository.PessoaRepository;
 import com.db.crud_pessoa.mapper.PessoaMapper;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -27,6 +30,14 @@ public class PessoaService {
     }
 
     public PessoaResponse salvar(PessoaRequest request) {
+
+        if (pessoaRepository.existsByCpf(request.cpf())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "CPF já cadastrado"
+            );
+        }
+
         Pessoa p = pessoaMapper.toEntity(request);
         return pessoaMapper.toResponse(pessoaRepository.save(p));
     }
