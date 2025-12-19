@@ -124,7 +124,6 @@ public class PessoaService {
         return principais;
     }
 
-
     public PessoaResponse atualizarEnderecoPorId(Long pessoaId, Long enderecoId, EnderecoDTO dto){
 
         Pessoa p = pessoaRepository.findById(pessoaId).orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
@@ -139,8 +138,6 @@ public class PessoaService {
 
         return pessoaMapper.toResponse(pessoaRepository.save(p));
     }
-
-
 
     public Integer calcularIdade(Long id) {
 

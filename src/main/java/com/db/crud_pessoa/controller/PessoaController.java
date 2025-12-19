@@ -4,7 +4,6 @@ import com.db.crud_pessoa.business.PessoaService;
 import com.db.crud_pessoa.dto.EnderecoDTO;
 import com.db.crud_pessoa.dto.PessoaRequest;
 import com.db.crud_pessoa.dto.PessoaResponse;
-import com.db.crud_pessoa.infrastructure.entitys.Endereco;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,14 +1,10 @@
 package com.db.crud_pessoa.infrastructure.entitys;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
-import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.validator.constraints.br.CPF;
 
 @Getter
 @Setter
